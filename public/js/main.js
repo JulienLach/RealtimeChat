@@ -1,8 +1,10 @@
 // acceder au formulaire pour récupérer les messages
 const chatForm = document.getElementById("chat-form");
 const chatMessages = document.querySelector(".chat-messages");
+const roomName = document.getElementById("room-name");
+const userList = document.getElementById("users");
 
-// Attraper le nom d'utilisateur et la room depuis l'URL avec la librairie Qs
+// Attraper le nom d'utilisateur et la room depuis l'URL avec la librairie Qs (ajoutée en CDN au HTML)
 const { username, room } = Qs.parse(location.search, {
   ignoreQueryPrefix: true,
 });
@@ -12,6 +14,12 @@ const socket = io(); // initialiser le socket de la library socket.io
 
 // Rejoindre la room
 socket.emit("joinRoom", { username, room });
+
+// Get la room et les utilisateurs
+socket.on("roomUsers", ({ room, users }) => {
+  outputRoomName(room); // Afficher le nom de la room
+  outputUsers(users); // Afficher les utilisateurs
+});
 
 // Message venant du serveur
 socket.on("message", (message) => {
@@ -49,4 +57,15 @@ function outputMessage(message) {
     ${message.text} <!-- message est maintenant un objet donc on appele sa propriété text -->
   </p>`;
   document.querySelector(".chat-messages").appendChild(div);
+}
+
+// Afficher le nom de la room sur le DOM en changeant le titre de la room dans la div
+function outputRoomName(room) {
+  roomName.innerText = room;
+}
+
+// Afficher le array des users connectés à la room sur le DOM
+function outputUsers(users) {
+  userList.innerHTML = `
+    ${users.map((user) => `<li>${user.username}</li>`).join("")}`;
 }

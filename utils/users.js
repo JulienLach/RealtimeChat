@@ -19,14 +19,18 @@ function userLeave(id) {
   const index = users.findIndex((user) => user.id === id);
 
   if (index !== -1) {
-    return users.splice(index, 1);
+    return users.splice(index, 1)[0]; // ici on retire l'utilisateur du array et on retourne l'utilisateur retiré avec [0]
   }
 }
 
 // Get tous les utilisateur d'une room
+function getRoomUsers(room) {
+  return users.filter((user) => user.room === room);
+}
 
 module.exports = {
   userJoin,
   getCurrentUser,
   userLeave,
+  getRoomUsers,
 };

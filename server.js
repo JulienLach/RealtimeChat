@@ -3,7 +3,12 @@ const http = require("http");
 const express = require("express");
 const socketio = require("socket.io");
 const formatMessage = require("./utils/messages"); // importer la fonction
-const { userJoin, getCurrentUser, userLeave } = require("./utils/users");
+const {
+  userJoin,
+  getCurrentUser,
+  userLeave,
+  getRoomUsers,
+} = require("./utils/users");
 
 const app = express();
 const server = http.createServer(app);
@@ -38,12 +43,21 @@ io.on("connection", (socket) => {
       );
     // broadcast envoie le message à tout le monde sauf à l'utilisateur qui se connecte
 
+    // Envoyer les infos de la room rejointe et des utilisateurs
+    io.to(user.room).emit("roomUsers", {
+      room: user.room,
+      users: getRoomUsers(user.room),
+    });
+
     // Afficher quand un utilisateur se déconnecte
     socket.on("disconnect", () => {
-      io.emit(
-        "message",
-        formatMessage(botName, `${user.username} a quitté le chat`)
-      );
+      const user = userLeave(socket.id); // retirer l'utilisateur du array users
+      if (user) {
+        io.to(user.room).emit(
+          "message",
+          formatMessage(botName, `${user.username} a quitté le chat`)
+        );
+      }
     });
   });
 
